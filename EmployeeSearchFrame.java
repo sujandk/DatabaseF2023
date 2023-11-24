@@ -119,23 +119,24 @@ public class EmployeeSearchFrame extends JFrame {
 					Class.forName(p.getProperty("db.driver")).newInstance();
 					Connection con = DriverManager.getConnection(dbURL, dbUser, dbPass);
 					Statement statement = con.createStatement();
+					
 					ResultSet resultSet = statement.executeQuery("SELECT * FROM DEPARTMENT");
-					ResultSet resultSet2 = statement.executeQuery("SELECT * FROM PROJECT");
+					
 
-					while(resultSet.next() || resultSet2.next()){
-
-						if (resultSet.next()){
+					while(resultSet.next()){
 						String deptName= resultSet.getString("Dname");
 						dept.add(deptName);
-						}
+					}
+					resultSet = statement.executeQuery("SELECT * FROM PROJECT");
+					
 
-						if (resultSet2.next()){
-							String prjName= resultSet.getString("Pname");
-							prj.add(prjName);
-							}
-
+					while(resultSet.next()){
+						String prjName= resultSet.getString("Pname");
+						prj.add(prjName);
 					}
 
+
+					con.close();
 		
 			
 				}
@@ -277,17 +278,40 @@ public class EmployeeSearchFrame extends JFrame {
 
 				
 				//System.out.println(selectedDeptItem[0]);
-				String query = "SELECT FNAME, LNAME FROM DEPARTMENT , PROJECT"  +
+				String query = "SELECT Fname, Lname FROM  EMPLOYEE JOIN DEPARTMENT on Dno=Dnumber JOIN WORKS_ON on Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
 								" WHERE " +
-								(selectedDept[0]? " NOT ": " ") +
-								selectedDeptItem[0] + 
-								" AND " +
-								(selectedProject[0]?  " NOT ": " ") +
-								selectedProjectItem[0] + ";" ;
+								" "
+								;
 
 
+				try
+				{
+					FileReader reader = new FileReader("database.properties");
+	  				Properties p = new Properties();
+					p.load(reader);
+					String dbUser = p.getProperty("db.user");
+					String dbPass = p.getProperty("db.password");
+					String dbURL = p.getProperty("db.url");
+					
 
-				textAreaEmployee.setText("John Smith\nFranklin Wong\nSyjan\nxaxa\nxasewqe\nsfljaf");
+					Class.forName(p.getProperty("db.driver")).newInstance();
+					Connection con = DriverManager.getConnection(dbURL, dbUser, dbPass);
+					Statement statement = con.createStatement();
+					
+					ResultSet resultSet = statement.executeQuery(query);
+					String output="";
+					while(resultSet.next())
+					{
+						output += resultSet.getString("Fname") + " " + resultSet.getString("Lname")+"\n";
+					}
+					textAreaEmployee.setText(output);
+					con.close();
+				}
+				catch(Exception ex)
+				{
+					ex.printStackTrace();
+				}
+				
 			}
 		});
 		btnSearch.setBounds(80, 276, 89, 23);
