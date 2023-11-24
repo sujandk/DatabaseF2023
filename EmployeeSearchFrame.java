@@ -90,7 +90,7 @@ public class EmployeeSearchFrame extends JFrame {
 		txtDatabase.setBounds(90, 20, 193, 20);
 		contentPane.add(txtDatabase);
 		txtDatabase.setColumns(10);
-		String databaseName= txtDatabase.toString();
+		
 		
 		
 		
@@ -113,14 +113,14 @@ public class EmployeeSearchFrame extends JFrame {
 					p.load(reader);
 					String dbUser = p.getProperty("db.user");
 					String dbPass = p.getProperty("db.password");
-					String dbURL = p.getProperty("db.urlFirstHalf");
-					dbURL = dbURL + databaseName +p.getProperty("db.urlSecondHalf");
+					String dbURL = p.getProperty("db.url");
+					
 
-					Class.forName("com.mysql.cj.jdbc.Driver");
+					Class.forName(p.getProperty("db.driver")).newInstance();
 					Connection con = DriverManager.getConnection(dbURL, dbUser, dbPass);
 					Statement statement = con.createStatement();
 					ResultSet resultSet = statement.executeQuery("SELECT * FROM DEPARTMENT");
-					ResultSet resultSet2 = statement.executeQuery("SELECR * FROM PROJECT");
+					ResultSet resultSet2 = statement.executeQuery("SELECT * FROM PROJECT");
 
 					while(resultSet.next() || resultSet2.next()){
 
@@ -130,7 +130,7 @@ public class EmployeeSearchFrame extends JFrame {
 						}
 
 						if (resultSet2.next()){
-							String prjName= resultSet.getString("Dname");
+							String prjName= resultSet.getString("Pname");
 							prj.add(prjName);
 							}
 
@@ -278,11 +278,11 @@ public class EmployeeSearchFrame extends JFrame {
 				
 				//System.out.println(selectedDeptItem[0]);
 				String query = "SELECT FNAME, LNAME FROM DEPARTMENT , PROJECT"  +
-								"WHERE" +
-								(selectedDept[0]? "NOT": "") +
+								" WHERE " +
+								(selectedDept[0]? " NOT ": " ") +
 								selectedDeptItem[0] + 
-								"AND" +
-								(selectedProject[0]? "NOT": "") +
+								" AND " +
+								(selectedProject[0]?  " NOT ": " ") +
 								selectedProjectItem[0] + ";" ;
 
 
