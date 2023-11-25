@@ -44,6 +44,7 @@ public class EmployeeSearchFrame extends JFrame {
 	private JList<String> lstProject;
 	private DefaultListModel<String> project = new DefaultListModel<String>();
 	private JTextArea textAreaEmployee;
+	private String databaseName;
 	/**
 	 * Launch the application.
 	 */
@@ -95,6 +96,7 @@ public class EmployeeSearchFrame extends JFrame {
 		
 		
 		
+		
 		JButton btnDBFill = new JButton("Fill");
 		/**
 		 * The btnDBFill should fill the department and project JList with the 
@@ -103,17 +105,18 @@ public class EmployeeSearchFrame extends JFrame {
 		btnDBFill.addActionListener(new ActionListener() {
 			ArrayList<String> dept = new ArrayList<>();   // to store the names of departments
 			ArrayList<String> prj = new ArrayList<>();    // to store the names of projects
-
+			
 
 			public void actionPerformed(ActionEvent e) {
 				try
 				{
+					databaseName = txtDatabase.getText().toString();
 					FileReader reader = new FileReader("database.properties");
 	  				Properties p = new Properties();
 					p.load(reader);
 					String dbUser = p.getProperty("db.user");
 					String dbPass = p.getProperty("db.password");
-					String dbURL = p.getProperty("db.url");
+					String dbURL = p.getProperty("db.url")+ databaseName + "?useSSL=false";
 					
 
 					Class.forName(p.getProperty("db.driver")).newInstance();
@@ -195,6 +198,7 @@ public class EmployeeSearchFrame extends JFrame {
             public void valueChanged(ListSelectionEvent s) {
                 if (!s.getValueIsAdjusting()) {
                     // Selection change is complete
+					
 					selectedProjectItem[0] =lstProject.getSelectedValue();
 					
                 }
@@ -276,22 +280,38 @@ public class EmployeeSearchFrame extends JFrame {
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				
+				String query="";
 				//System.out.println(selectedDeptItem[0]);
-				String query = "SELECT Fname, Lname FROM  EMPLOYEE JOIN DEPARTMENT on Dno=Dnumber JOIN WORKS_ON on Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
-								" WHERE " +
-								" "
-								;
-
+				//when neither not is checked 
+				if(!selectedDept[0] && !selectedProject[0] ){
+				query = "SELECT Fname, Lname FROM  EMPLOYEE JOIN DEPARTMENT ON Dno=Dnumber JOIN WORKS_ON ON Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
+								"WHERE Dname='" +selectedDeptItem[0]+"' AND Pname='"+selectedProjectItem[0]+"'";}
+				//when both nots are checked
+				else if(selectedDept[0] && selectedProject[0]){
+					query = "SELECT Fname, Lname FROM  EMPLOYEE "  +
+							"WHERE Ssn NOT IN (SELECT Ssn FROM EMPLOYEE JOIN DEPARTMENT ON Dno=Dnumber JOIN WORKS_ON ON Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
+								"WHERE Dname='" +selectedDeptItem[0]+"' AND Pname='"+selectedProjectItem[0]+"')";}
+				//when only department is checked			
+				else if(selectedDept[0] && !selectedProject[0]){
+					query = "SELECT Fname, Lname FROM EMPLOYEE JOIN WORKS_ON ON Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
+					"WHERE Pname= '" + selectedProjectItem[0]+"' AND Ssn NOT IN (SELECT Ssn FROM EMPLOYEE JOIN DEPARTMENT ON Dno=Dnumber "  +
+					"WHERE Dname='" +selectedDeptItem[0]+"')";}
+				//when only project checked
+				else if(!selectedDept[0] && selectedProject[0]){
+					query = "SELECT Fname, Lname FROM EMPLOYEE JOIN DEPARTMENT ON Dno=Dnumber "  +
+					"WHERE Dname='" + selectedDeptItem[0]+"' AND Ssn NOT IN (SELECT Ssn FROM EMPLOYEE JOIN WORKS_ON ON Essn=Ssn JOIN PROJECT ON Pno=Pnumber "  +
+					"WHERE Pname='" +selectedProjectItem[0]+"')";}
+						
 
 				try
 				{
+					databaseName = txtDatabase.getText().toString();
 					FileReader reader = new FileReader("database.properties");
 	  				Properties p = new Properties();
 					p.load(reader);
 					String dbUser = p.getProperty("db.user");
 					String dbPass = p.getProperty("db.password");
-					String dbURL = p.getProperty("db.url");
+					String dbURL = p.getProperty("db.url")+databaseName+"?useSSL=false";
 					
 
 					Class.forName(p.getProperty("db.driver")).newInstance();
@@ -320,7 +340,13 @@ public class EmployeeSearchFrame extends JFrame {
 		JButton btnClear = new JButton("Clear");
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				txtDatabase.setText("");
 				textAreaEmployee.setText("");
+				department.clear();
+				project.clear();
+				chckbxNotDept.setSelected(false);
+				chckbxNotProject.setSelected(false);
+				
 			}
 		});
 		btnClear.setBounds(236, 276, 89, 23);
