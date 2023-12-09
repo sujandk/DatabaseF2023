@@ -1,5 +1,4 @@
 /**
- * Author: Lon Smith, Ph.D.
  * Description: This is the framework for the database program. Additional requirements and functionality
  *    are to be built by you and your group.
  */
